@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Jersey Customizer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    #designer {
+      flex: 2;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    #controls {
+      flex: 1;
+      padding: 0 20px;
+    }
+    .control-panel {
+      background: white;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: bold;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      background: #4285f4;
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #3367d6;
+    }
+    canvas {
+      border: 1px solid #eee;
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4QkEBxAWABQZ1AAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAANElEQVQ4y2NgGAXDFmzatMmKAQ38f2Lg/////5nQNP5H4v+j8QdI/B8a/4/E/0fj/9H4fwYAVCYB+WgWg6QAAAAASUVORK5CYII=');
+    }
+    .color-option {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .color-option input[type="color"] {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="designer">
+      <h2>Jersey Designer</h2>
+      <canvas id="jersey-canvas" width="500" height="600"></canvas>
+    </div>
+    
+    <div id="controls">
+      <div class="control-panel">
+        <h3>Jersey Style</h3>
+        <label>Base Color:</label>
+        <input type="color" id="baseColor" value="#1a73e8">
+        
+        <label>Sleeve Color:</label>
+        <input type="color" id="sleeveColor" value="#ffffff">
+        
+        <label>Collar Color:</label>
+        <input type="color" id="collarColor" value="#1a73e8">
+        
+        <label>Stripe Color:</label>
+        <input type="color" id="stripeColor" value="#ea4335">
+      </div>
+      
+      <div class="control-panel">
+        <h3>Player Customization</h3>
+        <label>Number:</label>
+        <input type="text" id="playerNumber" maxlength="2" placeholder="10">
+        
+        <label>Number Color:</label>
+        <input type="color" id="numberColor" value="#ffffff">
+        
+        <label>Player Name:</label>
+        <input type="text" id="playerName" placeholder="PLAYER">
+        
+        <label>Name Color:</label>
+        <input type="color" id="nameColor" value="#ffffff">
+      </div>
+      
+      <div class="control-panel">
+        <h3>Sponsor Logo</h3>
+        <label>Logo Text:</label>
+        <input type="text" id="sponsorText" placeholder="SPONSOR">
+        
+        <label>Logo Color:</label>
+        <input type="color" id="logoColor" value="#ffffff">
+        
+        <button id="addLogo">Add Logo</button>
+      </div>
+      
+      <div class="control-panel">
+        <h3>Save Design</h3>
+        <button id="saveDesign">Download Jersey Design</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = new fabric.Canvas('jersey-canvas', {
+      selection: false,
+      backgroundColor: '#f8f9fa'
+    });
+    
+    // Jersey parts
+    const jersey = {
+      base: null,
+      leftSleeve: null,
+      rightSleeve: null,
+      collar: null,
+      stripes: [],
+      number: null,
+      name: null,
+      logo: null
+    };
+    
+    // Create realistic jersey
+    function createJersey() {
+      // Base (torso)
+      jersey.base = new fabric.Path('M150 150 Q150 120 300 120 Q450 120 450 150 L450 450 Q450 480 300 480 Q150 480 150 450 Z', {
+        fill: '#1a73e8',
+        stroke: '#333',
+        strokeWidth: 1,
+        selectable: false
+      });
+      
+      // Left sleeve
+      jersey.leftSleeve = new fabric.Path('M150 150 Q120 180 100 230 Q100 280 120 330 Q150 360 150 330 L150 230 Z', {
+        fill: '#ffffff',
+        stroke: '#333',
+        strokeWidth: 1,
+        selectable: false
+      });
+      
+      // Right sleeve
+      jersey.rightSleeve = new fabric.Path('M450 150 Q480 180 500 230 Q500 280 480 330 Q450 360 450 330 L450 230 Z', {
+        fill: '#ffffff',
+        stroke: '#333',
+        strokeWidth: 1,
+        selectable: false
+      });
+      
+      // Collar
+      jersey.collar = new fabric.Path('M250 150 Q300 130 350 150 L350 130 Q300 110 250 130 Z', {
+        fill: '#1a73e8',
+        stroke: '#333',
+        strokeWidth: 1,
+        selectable: false
+      });
+      
+      // Stripes
+      jersey.stripes.push(new fabric.Path('M150 250 L450 250 L450 270 L150 270 Z', {
+        fill: '#ea4335',
+        stroke: '#333',
+        strokeWidth: 1,
+        selectable: false
+      }));
+      
+      jersey.stripes.push(new fabric.Path('M150 350 L450 350 L450 370 L150 370 Z', {
+        fill: '#ea4335',
+        stroke: '#333',
+        strokeWidth: 1,
+        selectable: false
+      }));
+      
+      // Add all parts to canvas
+      canvas.add(jersey.base);
+      canvas.add(jersey.leftSleeve);
+      canvas.add(jersey.rightSleeve);
+      canvas.add(jersey.collar);
+      jersey.stripes.forEach(stripe => canvas.add(stripe));
+      
+      // Add default number
+      jersey.number = new fabric.Text('10', {
+        left: 300,
+        top: 200,
+        fontSize: 80,
+        fontFamily: 'Impact',
+        fill: '#ffffff',
+        originX: 'center',
+        originY: 'center',
+        selectable: true
+      });
+      canvas.add(jersey.number);
+      
+      // Add default name
+      jersey.name = new fabric.Text('PLAYER', {
+        left: 300,
+        top: 400,
+        fontSize: 30,
+        fontFamily: 'Arial',
+        fill: '#ffffff',
+        originX: 'center',
+        originY: 'center',
+        selectable: true
+      });
+      canvas.add(jersey.name);
+      
+      canvas.renderAll();
+    }
+    
+    // Initialize jersey
+    createJersey();
+    
+    // Event listeners
+    document.getElementById('baseColor').addEventListener('input', function() {
+      jersey.base.set('fill', this.value);
+      jersey.collar.set('fill', this.value);
+      canvas.requestRenderAll();
+    });
+    
+    document.getElementById('sleeveColor').addEventListener('input', function() {
+      jersey.leftSleeve.set('fill', this.value);
+      jersey.rightSleeve.set('fill', this.value);
+      canvas.requestRenderAll();
+    });
+    
+    document.getElementById('collarColor').addEventListener('input', function() {
+      jersey.collar.set('fill', this.value);
+      canvas.requestRenderAll();
+    });
+    
+    document.getElementById('stripeColor').addEventListener('input', function() {
+      jersey.stripes.forEach(stripe => stripe.set('fill', this.value));
+      canvas.requestRenderAll();
+    });
+    
+    document.getElementById('playerNumber').addEventListener('input', function() {
+      jersey.number.set('text', this.value.toUpperCase());
+      canvas.requestRenderAll();
+    });
+    
+    document.getElementById('numberColor').addEventListener('input', function() {
+      jersey.number.set('fill', this.value);
+      canvas.requestRenderAll();
+    });
+    
+    document.getElementById('playerName').addEventListener('input', function() {
+      jersey.name.set('text', this.value.toUpperCase());
+      canvas.requestRenderAll();
+    });
+    
+    document.getElementById('nameColor').addEventListener('input', function() {
+      jersey.name.set('fill', this.value);
+      canvas.requestRenderAll();
+    });
+    
+    document.getElementById('addLogo').addEventListener('click', function() {
+      const text = document.getElementById('sponsorText').value || 'SPONSOR';
+      const color = document.getElementById('logoColor').value;
+      
+      if (jersey.logo) {
+        canvas.remove(jersey.logo);
+      }
+      
+      jersey.logo = new fabric.Text(text, {
+        left: 300,
+        top: 300,
+        fontSize: 24,
+        fontFamily: 'Arial',
+        fill: color,
+        originX: 'center',
+        originY: 'center',
+        selectable: true
+      });
+      
+      canvas.add(jersey.logo);
+      canvas.setActiveObject(jersey.logo);
+      canvas.requestRenderAll();
+    });
+    
+    document.getElementById('saveDesign').addEventListener('click', function() {
+      const link = document.createElement('a');
+      link.download = 'custom-jersey.png';
+      link.href = canvas.toDataURL({
+        format: 'png',
+        quality: 1
+      });
+      link.click();
+    });
+  </script>
+</body>
+</html>
