@@ -1,5 +1,10 @@
 name: Deploy to EC2 on Push
 
+on:
+  push:
+    branches:
+      - main  # change if your branch is 'master'
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
